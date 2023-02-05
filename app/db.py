@@ -7,8 +7,8 @@ from flask import current_app, g
 def get_db():
     if 'db' not in g:
         g.db = psycopg.connect(
-            host=os.getenv('HOST'),
-            port=os.getenv('PORT'),
+            host=os.getenv('DB_HOST'),
+            port=os.getenv('DB_PORT'),
             dbname=os.getenv('DB_NAME'),
             user=os.getenv('DB_USERNAME'),
             password=os.getenv('DB_PASSWORD')

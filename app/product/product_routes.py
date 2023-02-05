@@ -1,9 +1,9 @@
 from flask import request
 from flask import Response
 import json
-from flaskr.db import get_db
-from flaskr.model.product import Product
-from flaskr.product import bp
+from app.db import get_db
+from app.model.product import Product
+from app.product import bp
 
 @bp.route('/', methods=['POST'])
 def add():

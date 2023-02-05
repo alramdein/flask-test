@@ -1,5 +1,5 @@
 from mimetypes import init
-from flaskr.db import get_db
+from app.db import get_db
 from flask import g
 
 class Product:
