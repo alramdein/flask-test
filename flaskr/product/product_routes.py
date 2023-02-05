@@ -1,14 +1,9 @@
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
-from werkzeug.security import check_password_hash, generate_password_hash
-
-from flaskr.db import get_db
-from flask import Response, jsonify
+from flask import request
+from flask import Response
 import json
-
-
-bp = Blueprint('product', __name__, url_prefix='/products')
+from flaskr.db import get_db
+from flaskr.model.product import Product
+from flaskr.product import bp
 
 @bp.route('/', methods=['POST'])
 def add():
@@ -16,7 +11,6 @@ def add():
     price = request.form.get('price')
     description = request.form.get('description')
     quantity = request.form.get('quantity')
-    db = get_db()
     error = None
 
     if not name:
@@ -30,14 +24,8 @@ def add():
 
     if error is None:
         try:
-            cur = db.cursor()
-            cur.execute(
-                "INSERT INTO products(name, price, description, quantity) VALUES (%s, %s, %s, %s)",
-                (name, price, description, quantity),
-            )
-            cur.close()
-            db.commit()
-            db.close()
+            p = Product(get_db())
+            p.create(name, price, description, quantity)
         except Exception as err:
             print(err)
             return Response(json.dumps({
@@ -55,33 +43,25 @@ def add():
 @bp.route('/', methods=['GET'])
 def get():
     sortBy = request.args.get("sortby")
+    
+    # default sortBy value
+    orderByQuery = "created_at DESC"
+    
     if sortBy is None or sortBy.upper() == "TERBARU":
-        query = "SELECT * FROM products ORDER BY created_at DESC"
+        pass
     elif sortBy.upper() == "TERMURAH":
-        query = "SELECT * FROM products ORDER BY price ASC"
+        orderByQuery = "price ASC"
     elif sortBy.upper() == "TERMAHAL":
-        query = "SELECT * FROM products ORDER BY price DESC"
+        orderByQuery = "price DESC"
     elif sortBy.upper() == "NAMEASC":
-        query = "SELECT * FROM products ORDER BY name ASC"
+        orderByQuery = "name ASC"
     elif sortBy.upper() == "NAMEDESC":
-        query = "SELECT * FROM products ORDER BY name DESC"
+        orderByQuery = "name DESC"
 
-    db = get_db()
     try:
-        cur = db.cursor()
-        cur.execute(query)
-        products = []
-        for value in cur.fetchall():
-            products.append({
-                "name": value[1],
-                "price": value[2],
-                "description": value[3],
-                "quantity": value[4],
-                "created_at": str(value[5])
-            })
-
+        p = Product(get_db())
+        products = p.findAll(orderByQuery)
         return Response(json.dumps(products), status=200, mimetype='application/json')
-        
     except Exception as error:
         print(error)
         return Response(json.dumps({
