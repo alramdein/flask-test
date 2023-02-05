@@ -51,3 +51,31 @@ def add():
     return Response(json.dumps({
                 "message": error,
             }), status=400, mimetype='application/json')
+
+@bp.route('/', methods=['GET'])
+def get():
+    sortBy = request.args.get("sortby")
+    # if sortBy is None:
+        # fetch all without sorting
+
+    db = get_db()
+    try:
+        cur = db.cursor()
+        cur.execute("SELECT * FROM products ORDER BY created_at DESC")
+        products = []
+        for value in cur.fetchall():
+            products.append({
+                "name": value[1],
+                "price": value[2],
+                "description": value[3],
+                "quantity": value[4],
+                "created_at": str(value[5])
+            })
+
+        return Response(json.dumps(products), status=200, mimetype='application/json')
+        
+    except Exception as error:
+        print(error)
+        return Response(json.dumps({
+                "message": "something went wrong",
+            }), status=500, mimetype='application/json')
