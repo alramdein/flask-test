@@ -55,13 +55,21 @@ def add():
 @bp.route('/', methods=['GET'])
 def get():
     sortBy = request.args.get("sortby")
-    # if sortBy is None:
-        # fetch all without sorting
+    if sortBy is None or sortBy.upper() == "TERBARU":
+        query = "SELECT * FROM products ORDER BY created_at DESC"
+    elif sortBy.upper() == "TERMURAH":
+        query = "SELECT * FROM products ORDER BY price ASC"
+    elif sortBy.upper() == "TERMAHAL":
+        query = "SELECT * FROM products ORDER BY price DESC"
+    elif sortBy.upper() == "NAMEASC":
+        query = "SELECT * FROM products ORDER BY name ASC"
+    elif sortBy.upper() == "NAMEDESC":
+        query = "SELECT * FROM products ORDER BY name DESC"
 
     db = get_db()
     try:
         cur = db.cursor()
-        cur.execute("SELECT * FROM products ORDER BY created_at DESC")
+        cur.execute(query)
         products = []
         for value in cur.fetchall():
             products.append({
