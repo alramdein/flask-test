@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:14.6
+    ports:
+        - 25432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=${DB_PASSWORD}", "pg_isready", "-U", "${DB_USERNAME}", "-d", "${DB_NAME}"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s  
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+  python:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    depends_on:
+        postgres:
+          condition: service_healthy
+    command: flask --app app init-db && flask --app app run -h 0.0.0.0 -p ${PORT}
+    ports:
+        - ${PORT}:${PORT}
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 25432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+  
