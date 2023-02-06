@@ -1,6 +1,5 @@
-from mimetypes import init
-from app.db import get_db
 from flask import g
+from app.redis import store_cache, flushdb_cache, redis_client
 
 class Product:
     def __init__(self, db) -> None:
@@ -16,6 +15,7 @@ class Product:
             cur.close()
             self.db.commit()
             self.db.close()
+            flushdb_cache()
         except Exception as error:
             raise ValueError(error)
     
@@ -32,6 +32,8 @@ class Product:
                     "quantity": value[4],
                     "created_at": str(value[5])
                 })
+            
+            store_cache(orderQuery, products)
             return products
         except Exception as error:
             raise ValueError(error)

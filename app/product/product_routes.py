@@ -1,9 +1,10 @@
-from flask import request
-from flask import Response
+from flask import Response, request
 import json
+import time
 from app.db import get_db
 from app.model.product import Product
 from app.product import bp
+from app.redis import get_cache, store_cache
 
 @bp.route('/', methods=['POST'])
 def add():
@@ -59,6 +60,10 @@ def get():
         orderByQuery = "name DESC"
 
     try:
+        data = get_cache(orderByQuery)
+        if data is not None:
+            return Response(json.dumps(data), status=200, mimetype='application/json')
+        
         p = Product(get_db())
         products = p.findAll(orderByQuery)
         return Response(json.dumps(products), status=200, mimetype='application/json')
