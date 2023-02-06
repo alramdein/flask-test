@@ -1,6 +1,5 @@
 from flask import Flask
 from dotenv import load_dotenv
-from flask_redis import FlaskRedis
 from . import db
 from . import product
 from app.redis import check_redis_client
@@ -18,3 +17,4 @@ def create_app(test_config=None):
     app.register_blueprint(product.bp)
 
     return app
+
